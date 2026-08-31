@@ -91,7 +91,9 @@ def run(kind, args, train_loader, test_loader, device, out_dir):
         args.matched_hidden = max(1, round((target_params - 10) / 795))
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
     history = []
-    start_time = time.perf_counter()
+    # Use process CPU time for a stable local comparison.  The Windows
+    # wall-clock counters in this environment can jump while torch kernels run.
+    start_time = time.process_time()
 
     def evaluate():
         model.eval(); correct = total = loss_sum = 0.0
@@ -128,7 +130,7 @@ def run(kind, args, train_loader, test_loader, device, out_dir):
               "best_test_acc": max(x["test_acc"] for x in history),
               "final_test_acc": history[-1]["test_acc"],
               "parameters": sum(p.numel() for p in model.parameters()),
-              "seconds": time.perf_counter() - start_time}
+              "seconds": time.process_time() - start_time}
     if hasattr(model, "field"):
         result["diagnostics"] = model.field.last_diagnostics
         result["approx_flops_per_sample"] = model.field.parameter_report()["approx_flops_per_step"] * model.field.steps

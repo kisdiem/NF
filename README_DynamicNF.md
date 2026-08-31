@@ -66,3 +66,16 @@ MNIST 子集 5000、20 轮、hidden=64、batch=128、seed=0：
 | Dynamic NF | 97.36% | 97.13% |
 
 全量数据下 Dynamic NF 明显超过 Linear，但仍低于 ReLU/GELU；因此目前它的动态关系机制尚未带来超过普通 MLP 的收益。
+
+## 速度
+
+全量 MNIST 单轮、CPU、batch=128 的进程 CPU 时间（约 469 个 batch）：
+
+| 版本 | 单轮 CPU 时间 | 相对 ReLU |
+|---|---:|---:|
+| Linear | 52.5 s | 1.11x |
+| ReLU | 47.1 s | 1.00x |
+| GELU | 50.5 s | 1.07x |
+| Dynamic NF | 112.7 s | 2.39x |
+
+Dynamic NF 的参数量只略高于 baseline，但每个 batch 需要生成 `[B,16,16]` 的动态关系矩阵并进行场更新，因此计算时间约为 ReLU 的 2.4 倍。
