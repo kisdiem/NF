@@ -15,12 +15,14 @@ class LocalElectricalFieldV3(nn.Module):
                  threshold_init=0.5, strength_init=0.5, decay_init=0.8,
                  tau=0.2, rho_init=0.15, beta_init=1.0,
                  tau_inhibition=0.2, lambda_r=0.8, gamma_init=0.5,
-                 excitation_gain=1.0, fuse_local_convs=False):
+                 excitation_gain=1.0, fuse_local_convs=False,
+                 collect_diagnostics=True):
         super().__init__()
         self.height, self.width, self.steps, self.mode = height, width, steps, mode
         self.tau, self.tau_inhibition, self.lambda_r = tau, tau_inhibition, lambda_r
         self.excitation_gain = excitation_gain
         self.fuse_local_convs = fuse_local_convs
+        self.collect_diagnostics = collect_diagnostics
         self.theta_raw = nn.Parameter(torch.full((1, 1, height, width), math.log(math.expm1(threshold_init))))
         self.strength_raw = nn.Parameter(torch.full((1, 1, height, width), math.log(math.expm1(strength_init))))
         self.decay_raw = nn.Parameter(torch.full((1, 1, height, width), math.log(decay_init / (1 - decay_init))))
@@ -48,7 +50,7 @@ class LocalElectricalFieldV3(nn.Module):
         v = x; r_state = torch.zeros_like(v)
         states=[]; releases=[]; excitations=[]; inhibitions=[]; activities=[]; changes=[]; gates=[]; rs=[]; ets=[]
         for _ in range(self.steps):
-            theta_eff = theta + gamma * r_state if self.mode in ("refractory", "refractory_bounded") else theta
+            theta_eff = theta + gamma * r_state if self.mode in ("refractory", "refractory_bounded", "centered_refractory") else theta
             gate = torch.sigmoid((v - theta_eff) / self.tau)
             release = gate * strength
             if self.fuse_local_convs:
@@ -71,11 +73,18 @@ class LocalElectricalFieldV3(nn.Module):
             v_next = decay * v + incoming
             if self.mode == "soft_reset":
                 v_next = v_next - 0.5 * gate
-            changes.append((v_next-v).abs().mean())
-            states.append(v_next); releases.append(release); excitations.append(excitation); inhibitions.append(inhibition); activities.append(activity)
-            gates.append(gate); ets.append(theta_eff)
+            if self.collect_diagnostics:
+                changes.append((v_next-v).abs().mean())
+                states.append(v_next); releases.append(release); excitations.append(excitation); inhibitions.append(inhibition); activities.append(activity)
+                gates.append(gate); ets.append(theta_eff)
             r_next = self.lambda_r * r_state + gate if self.mode in ("refractory", "refractory_bounded", "centered_refractory") else r_state
-            rs.append(r_next); v, r_state = v_next, r_next
+            if self.collect_diagnostics: rs.append(r_next)
+            v, r_state = v_next, r_next
+        if not self.collect_diagnostics:
+            self.last_diagnostics = {}
+            self.last_states = []; self.last_releases = []
+            self.last_excitations = []; self.last_inhibitions = []
+            return v
         self.last_states=[s.detach()[:1] for s in states]; self.last_releases=[s.detach()[:1] for s in releases]
         self.last_excitations=[s.detach()[:1] for s in excitations]; self.last_inhibitions=[s.detach()[:1] for s in inhibitions]
         self.last_diagnostics={

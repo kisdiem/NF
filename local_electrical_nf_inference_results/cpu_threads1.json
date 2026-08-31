@@ -1,0 +1,60 @@
+{
+  "1": {
+    "relu_mlp": {
+      "total_seconds": 0.015987099999620114,
+      "per_inference_ms": 0.03197419999924023,
+      "per_sample_ms": 0.03197419999924023
+    },
+    "gelu_mlp": {
+      "total_seconds": 0.035318100002768915,
+      "per_inference_ms": 0.07063620000553783,
+      "per_sample_ms": 0.07063620000553783
+    },
+    "dynamic_nf": {
+      "total_seconds": 1.0886554999960936,
+      "per_inference_ms": 2.177310999992187,
+      "per_sample_ms": 2.177310999992187
+    },
+    "local_normal": {
+      "total_seconds": 0.2193808000010904,
+      "per_inference_ms": 0.4387616000021808,
+      "per_sample_ms": 0.4387616000021808
+    },
+    "local_fused": {
+      "total_seconds": 0.2427109999989625,
+      "per_inference_ms": 0.485421999997925,
+      "per_sample_ms": 0.485421999997925
+    },
+    "max_output_diff": 0.0,
+    "fuse_speedup_percent": -10.634567837183635
+  },
+  "128": {
+    "relu_mlp": {
+      "total_seconds": 0.15857230000256095,
+      "per_inference_ms": 0.3171446000051219,
+      "per_sample_ms": 0.002477692187540015
+    },
+    "gelu_mlp": {
+      "total_seconds": 0.1515478000001167,
+      "per_inference_ms": 0.3030956000002334,
+      "per_sample_ms": 0.0023679343750018234
+    },
+    "dynamic_nf": {
+      "total_seconds": 4.811652899996261,
+      "per_inference_ms": 9.623305799992522,
+      "per_sample_ms": 0.07518207656244158
+    },
+    "local_normal": {
+      "total_seconds": 1.9138913999995566,
+      "per_inference_ms": 3.827782799999113,
+      "per_sample_ms": 0.029904553124993072
+    },
+    "local_fused": {
+      "total_seconds": 1.088495600000897,
+      "per_inference_ms": 2.176991200001794,
+      "per_sample_ms": 0.017007743750014015
+    },
+    "max_output_diff": 0.0,
+    "fuse_speedup_percent": 43.1265744753778
+  }
+}

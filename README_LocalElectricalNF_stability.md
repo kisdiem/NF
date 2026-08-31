@@ -50,3 +50,14 @@
 每个时间步的 excitation 和 inhibition 都从同一个 `release` 输入计算，只是使用不同的 3×3 kernel。新增 `fuse_local_convs` 开关后，将两个 kernel 堆成一个 `[2,1,3,3]` 卷积，一次输出两张局部图，再分别取 excitation 与 activity。该优化不改变公式：同一输入、同一 padding、同一浮点结果（实测输出最大差异为 0），只减少卷积调度。
 
 在 CPU、subset=5000、batch=128、5 epochs、raw_bounded 下：原版为 88.47 秒，融合版为 78.03 秒，减少 **11.8%**；训练曲线逐轮完全一致。时间步之间仍不能直接并行，因为 `V(t+1)` 依赖 `V(t)`；但每个时间步内部的节点和局部邻域已经是 GPU/向量化并行。进一步的 `torch.compile`、CUDA/AMP 和 DataLoader 优化属于运行时优化，不改变算法逻辑。
+
+### 推理时间
+
+单独关闭梯度和诊断采集后，在 CPU 单线程、预热 20 次、计时 500 次的基准中：
+
+| batch | ReLU MLP | GELU MLP | Dynamic NF | Local NF 原版 | Local NF 融合版 |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0.0320 ms | 0.0706 ms | 2.1773 ms | 0.4388 ms | 0.4854 ms |
+| 128 | 0.3171 ms | 0.3031 ms | 9.6233 ms | 3.8278 ms | 2.1770 ms |
+
+batch=128 时融合卷积使 Local NF 推理降低 43.1%；batch=1 时由于一次小卷积的 kernel 调度开销，融合版反而慢 10.6%。因此实际部署应根据 batch 选择实现。关闭诊断采集本身也很重要：诊断只用于实验，不应进入生产推理路径。
