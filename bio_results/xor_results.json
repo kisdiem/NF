@@ -1,0 +1,72 @@
+[
+  {
+    "train_loss": 0.6936034858226776,
+    "test_loss": 0.6932731866836548,
+    "train_acc": 0.5,
+    "test_acc": 0.5,
+    "best_test_acc": 0.75,
+    "parameters": 82,
+    "seconds": 1788186857.9444456,
+    "seconds_per_epoch": 5960622.859814819,
+    "approx_flops_per_sample": 164,
+    "task": "xor",
+    "model": "linear",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.00026959025126416236,
+    "test_loss": 0.0002702100027818233,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 82,
+    "seconds": 1788186859.1553504,
+    "seconds_per_epoch": 5960622.863851168,
+    "approx_flops_per_sample": 164,
+    "task": "xor",
+    "model": "relu",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.0003538109303917736,
+    "test_loss": 0.00036208005622029305,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 82,
+    "seconds": 1788186859.934869,
+    "seconds_per_epoch": 5960622.866449564,
+    "approx_flops_per_sample": 164,
+    "task": "xor",
+    "model": "gelu",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.0009886444022413343,
+    "test_loss": 0.000986191676929593,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 2306,
+    "seconds": 1788186865.2729254,
+    "seconds_per_epoch": 5960622.884243085,
+    "diagnostics": {
+      "dendritic_activation_mean": 1.0516451597213745,
+      "dendritic_activation_std": 1.232907772064209,
+      "soma_v_mean": 0.034732166677713394,
+      "soma_v_std": 1.9741941690444946,
+      "threshold_mean": 0.7032572627067566,
+      "threshold_std": 0.35736414790153503,
+      "activation_rate": 0.3383020758628845,
+      "adaptation_mean": 0.2979615032672882,
+      "dead_neuron_ratio": 0.0,
+      "saturated_neuron_ratio": 0.0,
+      "positive_weight_ratio": 0.3818359375,
+      "negative_weight_ratio": 0.6181640625
+    },
+    "approx_flops_per_sample": 6144,
+    "task": "xor",
+    "model": "bio",
+    "ablation": null
+  }
+]

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NF 能量传播模拟器</title>
+<style>
+  :root{color-scheme:dark;--bg:#111827;--panel:#1f2937;--line:#374151;--text:#e5e7eb;--muted:#9ca3af;--accent:#60a5fa}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,"Microsoft YaHei",sans-serif}
+  main{max-width:1250px;margin:auto;padding:22px} h1{margin:0 0 6px;font-size:24px} h2{font-size:16px;margin:0 0 12px} p{color:var(--muted);margin:5px 0 16px}
+  .layout{display:grid;grid-template-columns:285px 1fr;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px}
+  .control{margin:12px 0}.control label{display:flex;justify-content:space-between;margin-bottom:5px}.value{color:#93c5fd;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent)} select,button{width:100%;padding:8px;background:#111827;color:var(--text);border:1px solid #4b5563;border-radius:6px}
+  button{cursor:pointer;background:#2563eb;border-color:#3b82f6;margin-top:8px}button.secondary{background:#374151;border-color:#4b5563}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.chart{width:100%;height:300px;background:#0b1220;border:1px solid var(--line);border-radius:7px}
+  .wide{grid-column:1/-1;height:170px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.stat{background:#111827;border-radius:6px;padding:9px}.stat small{display:block;color:var(--muted)}.stat b{font-size:18px}
+  .note{font-size:12px;line-height:1.55;color:var(--muted);margin-top:14px}.legend{display:flex;gap:16px;color:var(--muted);font-size:12px;margin-top:6px}
+  @media(max-width:850px){.layout{grid-template-columns:1fr}.charts{grid-template-columns:1fr}.wide{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body><main>
+<h1>定向矩形神经场：能量传播模拟器</h1>
+<p>前向采用硬阈值截断；每个神经元按固定种子选择传播方向。用于观察能量是否平稳到达右端，不代表完整分类训练。</p>
+<div class="layout">
+  <section class="panel">
+    <h2>传播参数</h2>
+    <div class="control"><label>高度 H <span class="value" id="heightV"></span></label><input id="height" type="range" min="8" max="128" step="8" value="64"></div>
+    <div class="control"><label>宽度 W <span class="value" id="widthV"></span></label><input id="width" type="range" min="1" max="32" value="16"></div>
+    <div class="control"><label>阈值 T <span class="value" id="thresholdV"></span></label><input id="threshold" type="range" min="0.1" max="1.2" step="0.01" value="0.5"></div>
+    <div class="control"><label>增益 G <span class="value" id="gainV"></span></label><input id="gain" type="range" min="0.5" max="1.5" step="0.01" value="1"></div>
+    <div class="control"><label>初始整体能量 <span class="value" id="scaleV"></span></label><input id="scale" type="range" min="0.2" max="8" step="0.1" value="3"></div>
+    <div class="control"><label>路由模式</label><select id="route"><option value="all">三方向：上右下 / 右下 / 右上</option><option value="diagonal">两方向：右下 / 右上</option><option value="right">仅向右</option></select></div>
+    <div class="control"><label>初始分布</label><select id="pattern"><option value="gaussian">中心高斯</option><option value="uniform">均匀</option><option value="random">随机</option><option value="pulse">中心脉冲</option></select></div>
+    <div class="control"><label>方向随机种子 <span class="value" id="seedV"></span></label><input id="seed" type="range" min="0" max="99" value="0"></div>
+    <button id="reset">重新传播</button><button id="animate" class="secondary">逐列播放</button>
+    <div class="note">默认参数对应 90.4% 版本的场参数：H=64、W=16、T≈0.5、G=1、输入倍率=3。实际训练中的 T 会逐渐升高，因此可手动把阈值调到 0.3～0.6 比较。</div>
+  </section>
+  <section class="panel">
+    <div class="charts"><canvas id="heat" class="chart wide"></canvas><canvas id="energy" class="chart"></canvas><canvas id="activity" class="chart"></canvas></div>
+    <div class="stats"><div class="stat"><small>当前列</small><b id="colStat">-</b></div><div class="stat"><small>末列/首列能量</small><b id="ratioStat">-</b></div><div class="stat"><small>当前平均能量</small><b id="meanStat">-</b></div><div class="stat"><small>最大/平均比</small><b id="peakStat">-</b></div></div>
+    <div class="legend">能量图：蓝=低，黄=高；红线=平均能量；绿线=激活率。</div>
+  </section>
+</div></main>
+<script>
+const $=id=>document.getElementById(id), cvs={heat:$('heat'),energy:$('energy'),activity:$('activity')};
+let state={columns:[],active:0,anim:null};
+function rng(seed){let x=(seed+1)*0x6D2B79F5;return()=>{x|=0;x=x+0x6D2B79F5|0;let t=Math.imul(x^x>>>15,1|x);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function params(){return{H:+$('height').value,W:+$('width').value,T:+$('threshold').value,G:+$('gain').value,S:+$('scale').value,route:$('route').value,pattern:$('pattern').value,seed:+$('seed').value}}
+function initial(p){let r=rng(p.seed+991),e=new Array(p.H).fill(0),mid=(p.H-1)/2;for(let i=0;i<p.H;i++){let v;if(p.pattern==='uniform')v=1;else if(p.pattern==='random')v=.25+.75*r();else if(p.pattern==='pulse')v=i===Math.round(mid)?4:0;else v=Math.exp(-Math.pow((i-mid)/(p.H*.20),2)*2);e[i]=v*p.S}return e}
+function routeFor(p,r,i){if(p.route==='right')return[[i,1]];if(p.route==='diagonal'){return r()<.5?[[i,0.5],[i+1,0.5]]:[[i,0.5],[i-1,0.5]]}let q=Math.floor(r()*3);if(q===0){let a=[];if(i>0)a.push([i-1,1/3]);a.push([i,1/3]);if(i<p.H-1)a.push([i+1,1/3]);let z=a.reduce((s,x)=>s+x[1],0);return a.map(x=>[x[0],x[1]/z])}if(q===1){let a=[[i,0.5]];if(i<p.H-1)a.push([i+1,0.5]);let z=a.reduce((s,x)=>s+x[1],0);return a.map(x=>[x[0],x[1]/z])}let a=[[i,0.5]];if(i>0)a.push([i-1,0.5]);let z=a.reduce((s,x)=>s+x[1],0);return a.map(x=>[x[0],x[1]/z])}
+function simulate(){let p=params(),r=rng(p.seed),e=initial(p),cols=[e.slice()],activeRates=[],means=[];for(let c=0;c<p.W;c++){let n=new Array(p.H).fill(0),on=0;for(let i=0;i<p.H;i++){if(Math.abs(e[i])>=p.T){on++;for(const [j,w] of routeFor(p,r,i))if(j>=0&&j<p.H)n[j]+=e[i]*p.G*w}}activeRates.push(on/p.H);means.push(e.reduce((a,v)=>a+Math.abs(v),0)/p.H);e=n;cols.push(e.slice())}activeRates.push(e.filter(v=>Math.abs(v)>=p.T).length/p.H);means.push(e.reduce((a,v)=>a+Math.abs(v),0)/p.H);state={columns:cols,activeRates,means,active:0,params:p};draw()}
+function resize(c){let d=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*d;c.height=h*d;let x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return[x,w,h]}
+function lineChart(c,series,labels,ytitle,colors){let [x,w,h]=resize(c),ctx=x, pad={l:43,r:12,t:20,b:30};ctx.clearRect(0,0,w,h);ctx.fillStyle='#0b1220';ctx.fillRect(0,0,w,h);let max=Math.max(...series.flatMap(s=>s.data),1e-6);ctx.strokeStyle='#374151';ctx.lineWidth=1;for(let k=0;k<5;k++){let y=pad.t+(h-pad.t-pad.b)*k/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillStyle='#9ca3af';ctx.fillText((max*(1-k/4)).toFixed(2),4,y+4)}series.forEach((s,si)=>{ctx.strokeStyle=colors[si];ctx.lineWidth=2;ctx.beginPath();s.data.forEach((v,i)=>{let xx=pad.l+(w-pad.l-pad.r)*i/(s.data.length-1||1),yy=h-pad.b-(h-pad.t-pad.b)*v/max;i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.stroke()});ctx.fillStyle='#9ca3af';ctx.fillText(ytitle,5,14);ctx.fillText('列',w-20,h-8);ctx.strokeStyle='#6b7280';ctx.beginPath();ctx.moveTo(pad.l,h-pad.b);ctx.lineTo(w-pad.r,h-pad.b);ctx.stroke()}
+function heatmap(){let [x,w,h]=resize(cvs.heat),ctx=x,p=state.params,cols=state.columns;ctx.clearRect(0,0,w,h);let cw=Math.max(2,(w-45)/(p.W+1)),ch=Math.max(1,(h-28)/p.H);for(let c=0;c<cols.length;c++){for(let i=0;i<p.H;i++){let v=Math.abs(cols[c][i]),q=Math.min(1,v/(p.T*3+1e-6));ctx.fillStyle=`hsl(${235-210*q},${70+20*q}%,${18+48*q}%)`;ctx.fillRect(40+c*cw,18+i*ch,cw+.5,ch+.5)}}ctx.fillStyle='#d1d5db';ctx.fillText('能量分布（横轴=列，纵轴=高度）',8,13);ctx.strokeStyle='#fbbf24';ctx.beginPath();ctx.moveTo(40+state.active*cw,18);ctx.lineTo(40+state.active*cw,h-10);ctx.stroke()}
+function draw(){let p=state.params,idx=state.active;heatmap();let m=state.means.slice(0,idx+1),a=state.activeRates.slice(0,idx+1);lineChart(cvs.energy,[{data:m}],'','平均绝对能量',['#60a5fa']);lineChart(cvs.activity,[{data:a}],'','激活率',['#34d399']);let first=state.means[0]||0,last=state.means[idx]||0,cur=state.columns[idx]||[];let mean=last,peak=mean?Math.max(...cur.map(v=>Math.abs(v)))/mean:0;$('colStat').textContent=`${idx} / ${p.W}`;$('ratioStat').textContent=(last/(first+1e-9)).toFixed(3);$('meanStat').textContent=mean.toFixed(4);$('peakStat').textContent=peak.toFixed(2)}
+function labels(){for(const id of ['height','width','threshold','gain','scale','seed'])$(id+'V').textContent=$(id).value}
+function reset(){if(state.anim)clearInterval(state.anim);labels();simulate();state.active=state.params.W;draw()}
+for(const id of ['height','width','threshold','gain','scale','seed','route','pattern'])$(id).addEventListener('input',reset);$('route').addEventListener('change',reset);$('pattern').addEventListener('change',reset);$('reset').onclick=reset;
+$('animate').onclick=()=>{if(state.anim){clearInterval(state.anim);state.anim=null;return}state.active=0;draw();state.anim=setInterval(()=>{state.active++;draw();if(state.active>=state.params.W){clearInterval(state.anim);state.anim=null}},180)};
+reset();
+</script></body></html>

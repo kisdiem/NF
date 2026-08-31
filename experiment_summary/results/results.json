@@ -1,0 +1,23 @@
+{
+  "date": "2026-08-31",
+  "dataset": "MNIST first 5000 training samples",
+  "seed": 0,
+  "batch": 128,
+  "test_set_used_for_training": false,
+  "baseline": {
+    "rect_nf_all": 0.904,
+    "relu64": 0.9284,
+    "cnn": 0.9385
+  },
+  "best_nf_variant": {
+    "name": "parallel_ru",
+    "accuracy": 0.9067,
+    "route": "simultaneous right and upper-right",
+    "height": 64,
+    "width": 16,
+    "threshold_init": 0.5,
+    "gain_init": 1.0,
+    "gain_learning_rate": 0.0001
+  },
+  "interpretation": "Parallel fan-out is better than hard route selection, but no tested variant has approached the 93 percent target. The remaining gap is structural rather than a small hyperparameter difference."
+}

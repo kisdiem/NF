@@ -1,0 +1,72 @@
+[
+  {
+    "train_loss": 0.6928572058677673,
+    "test_loss": 0.6933201551437378,
+    "train_acc": 0.505859375,
+    "test_acc": 0.4970703125,
+    "best_test_acc": 0.6279296875,
+    "parameters": 82,
+    "seconds": 0.1737226000004739,
+    "seconds_per_epoch": 0.0008686130000023695,
+    "approx_flops_per_sample": 164,
+    "task": "circles",
+    "model": "linear",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.005430103279650211,
+    "test_loss": 0.0060319602489471436,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 82,
+    "seconds": 0.18262950000280398,
+    "seconds_per_epoch": 0.0009131475000140199,
+    "approx_flops_per_sample": 164,
+    "task": "circles",
+    "model": "relu",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.006531374994665384,
+    "test_loss": 0.0074506523087620735,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 82,
+    "seconds": 0.22734379999747034,
+    "seconds_per_epoch": 0.0011367189999873517,
+    "approx_flops_per_sample": 164,
+    "task": "circles",
+    "model": "gelu",
+    "ablation": null
+  },
+  {
+    "train_loss": 0.006398293189704418,
+    "test_loss": 0.006437342148274183,
+    "train_acc": 1.0,
+    "test_acc": 1.0,
+    "best_test_acc": 1.0,
+    "parameters": 2306,
+    "seconds": 2.7515509000004386,
+    "seconds_per_epoch": 0.013757754500002193,
+    "diagnostics": {
+      "dendritic_activation_mean": 1.117017149925232,
+      "dendritic_activation_std": 1.27175772190094,
+      "soma_v_mean": -2.29634165763855,
+      "soma_v_std": 4.745940685272217,
+      "threshold_mean": 0.5579434633255005,
+      "threshold_std": 0.20038318634033203,
+      "activation_rate": 0.24884776771068573,
+      "adaptation_mean": 0.23418425023555756,
+      "dead_neuron_ratio": 0.0,
+      "saturated_neuron_ratio": 0.25,
+      "positive_weight_ratio": 0.8427734375,
+      "negative_weight_ratio": 0.1572265625
+    },
+    "approx_flops_per_sample": 6144,
+    "task": "circles",
+    "model": "bio",
+    "ablation": null
+  }
+]

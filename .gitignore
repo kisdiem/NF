@@ -1,0 +1,6 @@
+# MNIST 会自动下载，不随代码发送
+data/
+
+# Python 缓存
+__pycache__/
+*.pyc
