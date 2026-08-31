@@ -57,3 +57,19 @@ py -3 train_hierarchical_nf.py --epochs 10 --subset 5000 --batch 128
 分层版本确实减少了无反馈关系矩阵的理论规模，但没有减少实际训练时间；默认分层结构也没有提高准确率。关闭 Layer2 内部作用后结果略好，提示 Layer2 内部关系可能与跨层组合发生冗余或干扰。弱反馈没有带来收益，第一版不应继续扩大反馈机制。
 
 关系矩阵和 state-change 图保存在 `hierarchical_nf_results/`。
+
+## 20轮最高准确率补充
+
+MNIST 子集 5000、batch=128、hidden=64、seed=0：
+
+| 模型 | 最高准确率 | 最高轮次 | 第20轮准确率 |
+|---|---:|---:|---:|
+| Linear | 90.61% | 4 | 89.54% |
+| ReLU | 93.16% | 20 | 93.16% |
+| GELU | 93.06% | 20 | 93.06% |
+| Flat Dynamic NF | 93.14% | 14 | 92.95% |
+| Hierarchical | 92.63% | 20 | 92.63% |
+| Hierarchical，无 Layer2 内部关系 | 93.12% | 20 | 93.12% |
+| Hierarchical，弱反馈 | 92.97% | 20 | 92.97% |
+
+延长训练后，默认分层结构仍低于 flat Dynamic NF；关闭 Layer2 内部关系的版本接近 flat，但没有超过它。
