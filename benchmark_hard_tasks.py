@@ -15,10 +15,10 @@ class MLP(nn.Module):
     def forward(self,x): return self.b(self.act(self.a(x)))
 
 class LocalNF(nn.Module):
-    def __init__(self, dim, classes, no_inhibition=False):
+    def __init__(self, dim, classes, variant="raw_bounded"):
         super().__init__(); self.a=nn.Linear(dim,64)
-        if no_inhibition: self.field=LocalElectricalField(8,8,4,threshold_init=.5,strength_init=.5,decay_init=.8,tau=.2,no_threshold=False,persistence=True,inhibition=False)
-        else: self.field=LocalElectricalFieldV3(8,8,4,mode='raw_bounded',fuse_local_convs=True,collect_diagnostics=False)
+        if variant == "no_inhibition": self.field=LocalElectricalField(8,8,4,threshold_init=.5,strength_init=.5,decay_init=.8,tau=.2,no_threshold=False,persistence=True,inhibition=False)
+        else: self.field=LocalElectricalFieldV3(8,8,4,mode=variant,fuse_local_convs=True,collect_diagnostics=False)
         self.b=nn.Linear(64,classes)
     def forward(self,x): return self.b(self.field(self.a(x).view(-1,1,8,8)).flatten(1))
 
@@ -52,7 +52,7 @@ def evaluate(m,loader):
     return c/t
 
 def run(kind,tr,te,dim,classes,a):
-    torch.manual_seed(a.seed); m=MLP(dim,classes,F.relu if kind=='relu' else F.gelu) if kind in ('relu','gelu') else LocalNF(dim,classes,kind=='no_inhibition'); train=DataLoader(tr,batch_size=a.batch,shuffle=True); test=DataLoader(te,batch_size=1024); opt=torch.optim.Adam(m.parameters(),lr=a.lr,weight_decay=1e-4); hist=[]; st=time.perf_counter()
+    torch.manual_seed(a.seed); m=MLP(dim,classes,F.relu if kind=='relu' else F.gelu) if kind in ('relu','gelu') else LocalNF(dim,classes,kind); train=DataLoader(tr,batch_size=a.batch,shuffle=True); test=DataLoader(te,batch_size=1024); opt=torch.optim.Adam(m.parameters(),lr=a.lr,weight_decay=1e-4); hist=[]; st=time.perf_counter()
     for ep in range(a.epochs):
         m.train(); c=t=0
         for x,y in train:
@@ -61,8 +61,8 @@ def run(kind,tr,te,dim,classes,a):
     return {'model':kind,'best_test_acc':max(r['test_acc'] for r in hist),'final_test_acc':hist[-1]['test_acc'],'history':hist,'parameters':sum(p.numel() for p in m.parameters()),'seconds':time.perf_counter()-st}
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument('--tasks',default='spiral3,checkerboard,parity8,noisy_moons100,noisy_spiral100'); p.add_argument('--n',type=int,default=6000); p.add_argument('--epochs',type=int,default=100); p.add_argument('--batch',type=int,default=128); p.add_argument('--lr',type=float,default=3e-3); p.add_argument('--seed',type=int,default=0); a=p.parse_args(); torch.set_num_threads(1); out='hard_task_results'; os.makedirs(out,exist_ok=True); allr={}
+    p=argparse.ArgumentParser(); p.add_argument('--tasks',default='spiral3,checkerboard,parity8,noisy_moons100,noisy_spiral100'); p.add_argument('--n',type=int,default=6000); p.add_argument('--epochs',type=int,default=100); p.add_argument('--batch',type=int,default=128); p.add_argument('--lr',type=float,default=3e-3); p.add_argument('--seed',type=int,default=0); p.add_argument('--result-tag',default='seed0'); a=p.parse_args(); torch.set_num_threads(1); out='hard_task_results'; os.makedirs(out,exist_ok=True); allr={}
     for task in a.tasks.split(','):
-        tr,te,dim,classes=make_data(task,a.n,a.seed); allr[task]=[run(k,tr,te,dim,classes,a) for k in ('relu','gelu','raw_bounded','no_inhibition')]; print('\n'+task); [print(f"{r['model']:14s} best={r['best_test_acc']:.4f} final={r['final_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.2f}s") for r in allr[task]]
-    with open(os.path.join(out,'results_seed0.json'),'w',encoding='utf-8') as f: json.dump(allr,f,indent=2)
+        tr,te,dim,classes=make_data(task,a.n,a.seed); allr[task]=[run(k,tr,te,dim,classes,a) for k in ('relu','gelu','raw_bounded','raw_unbounded','no_inhibition')]; print('\n'+task); [print(f"{r['model']:14s} best={r['best_test_acc']:.4f} final={r['final_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.2f}s") for r in allr[task]]
+    with open(os.path.join(out,'results_'+a.result_tag+'.json'),'w',encoding='utf-8') as f: json.dump(allr,f,indent=2)
 if __name__=='__main__': main()

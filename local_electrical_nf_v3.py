@@ -31,7 +31,7 @@ class LocalElectricalFieldV3(nn.Module):
         self.gamma_raw = nn.Parameter(torch.tensor(math.log(math.expm1(gamma_init))))
         k_exc = torch.tensor([[0.7, 1.0, 0.7], [1.0, 0.0, 1.0], [0.7, 1.0, 0.7]])
         k_inh = torch.ones(3, 3); k_inh[1, 1] = 0; k_inh /= k_inh.sum()
-        if mode not in ("raw", "raw_bounded"): k_exc /= k_exc.sum()
+        if mode not in ("raw", "raw_bounded", "raw_unbounded"): k_exc /= k_exc.sum()
         self.register_buffer("exc_kernel", k_exc.float().view(1, 1, 3, 3))
         self.register_buffer("inh_kernel", k_inh.float().view(1, 1, 3, 3))
         self.register_buffer("fused_kernel", torch.stack((k_exc, k_inh)).float().view(2, 1, 3, 3))
@@ -61,7 +61,7 @@ class LocalElectricalFieldV3(nn.Module):
                 excitation = self.excitation_gain * F.conv2d(release, self.exc_kernel, padding=1)
                 activity = F.conv2d(release, self.inh_kernel, padding=1)
             inh_gate = torch.sigmoid((activity - rho) / self.tau_inhibition)
-            inhibition = beta * inh_gate * activity
+            inhibition = torch.zeros_like(excitation) if self.mode == "raw_unbounded" else beta * inh_gate * activity
             incoming = excitation - inhibition
             if self.mode in ("bounded", "refractory_bounded", "raw_bounded"):
                 incoming = torch.tanh(incoming)
