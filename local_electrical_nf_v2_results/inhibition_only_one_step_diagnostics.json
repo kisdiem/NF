@@ -1,0 +1,39 @@
+{
+  "membrane_mean": [
+    1.3255808353424072
+  ],
+  "membrane_abs_mean": [
+    1.8787524700164795
+  ],
+  "state_change": [
+    1.5074089765548706
+  ],
+  "activation_rate": [
+    0.35809949040412903
+  ],
+  "release_abs_mean": [
+    0.26579710841178894
+  ],
+  "excitation_mean": [
+    1.4833084344863892
+  ],
+  "inhibition_mean": [
+    0.016268104314804077
+  ],
+  "inhibition_gate_mean": [
+    0.1220797523856163
+  ],
+  "threshold_mean": 0.5291232466697693,
+  "effective_threshold_mean": [
+    0.5291232466697693
+  ],
+  "decay_mean": 0.7637597918510437,
+  "refractory_mean": [
+    0.0
+  ],
+  "rho": 0.6478670239448547,
+  "beta": 0.4315178096294403,
+  "gamma": 0.5,
+  "dead_ratio": 1.992984653043095e-05,
+  "saturated_ratio": 0.0
+}
