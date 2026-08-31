@@ -1,0 +1,130 @@
+[
+  {
+    "freeze_field": false,
+    "history": [
+      {
+        "epoch": 1,
+        "train_acc": 0.6952,
+        "test_acc": 0.8699
+      },
+      {
+        "epoch": 2,
+        "train_acc": 0.906,
+        "test_acc": 0.9
+      },
+      {
+        "epoch": 3,
+        "train_acc": 0.9348,
+        "test_acc": 0.9145
+      },
+      {
+        "epoch": 4,
+        "train_acc": 0.9528,
+        "test_acc": 0.9188
+      },
+      {
+        "epoch": 5,
+        "train_acc": 0.9636,
+        "test_acc": 0.9174
+      }
+    ],
+    "field_parameter_delta": {
+      "theta_raw": {
+        "abs_delta_mean": 0.05038628727197647,
+        "relative_delta": 0.1373952478170395
+      },
+      "strength_raw": {
+        "abs_delta_mean": 0.07178080826997757,
+        "relative_delta": 0.20671775937080383
+      },
+      "decay_raw": {
+        "abs_delta_mean": 0.1750606745481491,
+        "relative_delta": 0.13109734654426575
+      },
+      "rho_raw": {
+        "abs_delta_mean": 0.2802168130874634,
+        "relative_delta": 0.15386530756950378
+      },
+      "beta_raw": {
+        "abs_delta_mean": 0.2852872312068939,
+        "relative_delta": 0.5270166993141174
+      },
+      "gamma_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      }
+    },
+    "post_training_perturbation": {
+      "normal": 0.9174,
+      "shuffle_space": 0.0959,
+      "spatial_mean": 0.1942,
+      "zero_field": 0.1032,
+      "pre_field": 0.4253,
+      "one_step": 0.5994
+    },
+    "field_gradient_check": {
+      "theta_raw": 0.0015661815414205194,
+      "strength_raw": 0.001434624195098877,
+      "decay_raw": 0.0014605653705075383,
+      "rho_raw": 0.001771735493093729,
+      "beta_raw": 0.0022829286754131317,
+      "gamma_raw": null
+    }
+  },
+  {
+    "freeze_field": true,
+    "history": [
+      {
+        "epoch": 1,
+        "train_acc": 0.695,
+        "test_acc": 0.869
+      },
+      {
+        "epoch": 2,
+        "train_acc": 0.905,
+        "test_acc": 0.9007
+      },
+      {
+        "epoch": 3,
+        "train_acc": 0.9346,
+        "test_acc": 0.9144
+      },
+      {
+        "epoch": 4,
+        "train_acc": 0.9534,
+        "test_acc": 0.9178
+      },
+      {
+        "epoch": 5,
+        "train_acc": 0.9628,
+        "test_acc": 0.9167
+      }
+    ],
+    "field_parameter_delta": {
+      "theta_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      },
+      "strength_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      },
+      "decay_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      },
+      "rho_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      },
+      "beta_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      },
+      "gamma_raw": {
+        "abs_delta_mean": 0.0,
+        "relative_delta": 0.0
+      }
+    }
+  }
+]
