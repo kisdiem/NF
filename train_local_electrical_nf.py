@@ -110,6 +110,7 @@ def main():
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--models", default="linear,relu,gelu,dynamic,local,no_threshold,no_persistence,no_inhibition,one_step")
+    ap.add_argument("--result-tag", default="", help="optional suffix for the result JSON filename")
     ap.add_argument("--data-root", default="data/mnist")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = ap.parse_args()
@@ -123,7 +124,8 @@ def main():
             args.steps = old
         else:
             results.append(run(kind, args, train_loader, test_loader, device, out_dir))
-    with open(os.path.join(out_dir, f"results_seed{args.seed}.json"), "w", encoding="utf-8") as f:
+    suffix = f"_{args.result_tag}" if args.result_tag else ""
+    with open(os.path.join(out_dir, f"results_seed{args.seed}{suffix}.json"), "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     print("\nSUMMARY")
     for r in results:
