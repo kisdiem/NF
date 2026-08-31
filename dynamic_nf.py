@@ -17,7 +17,8 @@ class DynamicNeuralField(nn.Module):
                  relation_gain_init=0.1, temperature=1.0,
                  state_gate=True, state_persistence=True,
                  dynamic_relation=True, allow_feedback=True,
-                 local_branches=True, norm=True):
+                 local_branches=True, norm=True, nonlinear=True,
+                 strict_linear=False):
         super().__init__()
         self.n_nodes = n_nodes
         self.node_dim = node_dim
@@ -30,11 +31,17 @@ class DynamicNeuralField(nn.Module):
         self.local_branches = local_branches
         self.temperature = temperature
         self.norm_enabled = norm
+        self.nonlinear = nonlinear
+        self.strict_linear = strict_linear
 
-        self.q_proj = nn.Linear(node_dim, node_dim, bias=False)
-        self.k_proj = nn.Linear(node_dim, node_dim, bias=False)
-        self.relation_gain_raw = nn.Parameter(
-            torch.logit(torch.tensor(float(relation_gain_init))))
+        if not strict_linear:
+            self.q_proj = nn.Linear(node_dim, node_dim, bias=False)
+            self.k_proj = nn.Linear(node_dim, node_dim, bias=False)
+            self.relation_gain_raw = nn.Parameter(
+                torch.logit(torch.tensor(float(relation_gain_init))))
+        else:
+            self.static_relation = nn.Parameter(
+                torch.randn(n_nodes, n_nodes) * relation_gain_init)
         self.self_proj = nn.Linear(node_dim, self.branches * node_dim)
         self.message_proj = nn.Linear(node_dim, self.branches * node_dim)
         self.branch_bias = nn.Parameter(torch.zeros(self.branches, node_dim))
@@ -50,6 +57,10 @@ class DynamicNeuralField(nn.Module):
     @property
     def relation_gain(self):
         # Bounded gain keeps recurrent feedback initially weak and stable.
+        if self.strict_linear:
+            return self.static_relation.abs().mean()
+        if not self.nonlinear:
+            return self.relation_gain_raw.abs()
         return torch.sigmoid(self.relation_gain_raw)
 
     def reset_diagnostics(self):
@@ -58,10 +69,13 @@ class DynamicNeuralField(nn.Module):
         self.last_states = []
 
     def _relation(self, h):
+        if self.strict_linear:
+            return self.static_relation.unsqueeze(0).expand(h.shape[0], -1, -1)
         q = self.q_proj(h)
         k = self.k_proj(h)
         score = torch.matmul(q, k.transpose(1, 2)) / (self.node_dim ** 0.5)
-        relation = torch.tanh(score / max(self.temperature, 1e-6)) * self.relation_gain
+        relation = ((torch.tanh(score / max(self.temperature, 1e-6))
+                     if self.nonlinear else score) * self.relation_gain)
         if not self.allow_feedback:
             # Source i may affect target j only in one fixed triangular half.
             # This is an ablation for feedback/cycles, not the default model.
@@ -90,20 +104,26 @@ class DynamicNeuralField(nn.Module):
                                                    self.branches, self.node_dim)
                 msg_part = self.message_proj(message).view(
                     h.shape[0], self.n_nodes, self.branches, self.node_dim)
-                branch = torch.tanh(self_part + msg_part + self.branch_bias)
-                mix = torch.softmax(self.branch_mix, dim=0)
+                branch_raw = self_part + msg_part + self.branch_bias
+                branch = torch.tanh(branch_raw) if self.nonlinear else branch_raw
+                mix = (torch.softmax(self.branch_mix, dim=0)
+                       if self.nonlinear else
+                       torch.full_like(self.branch_mix, 1.0 / self.branches))
                 candidate = (branch * mix.view(1, 1, -1, 1)).sum(dim=2)
             else:
-                candidate = torch.tanh(self.update_proj(pair))
+                candidate_raw = self.update_proj(pair)
+                candidate = (torch.tanh(candidate_raw) if self.nonlinear
+                             else candidate_raw)
             if self.state_persistence:
                 if self.state_gate:
-                    gate = torch.sigmoid(self.gate_proj(pair))
+                    gate = (torch.sigmoid(self.gate_proj(pair)) if self.nonlinear
+                            else torch.full_like(h, 0.5))
                 else:
                     gate = torch.full_like(h, 0.5)
                 h_next = (1.0 - gate) * h + gate * candidate
             else:
                 h_next = candidate
-            h_next = self.norm(h_next)
+            h_next = self.norm(h_next) if self.nonlinear else h_next
             changes.append((h_next - h).abs().mean())
             if prev_relation is None:
                 relation_changes.append(torch.zeros((), device=h.device, dtype=h.dtype))

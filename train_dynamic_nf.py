@@ -52,6 +52,12 @@ def make_model(kind, args):
         common["state_persistence"] = False
     elif kind == "no_branches":
         common["local_branches"] = False
+    elif kind == "no_nonlinearity":
+        common["nonlinear"] = False
+    elif kind == "strict_linear_nf":
+        common["nonlinear"] = False
+        common["strict_linear"] = True
+        common["dynamic_relation"] = False
     return DynamicNFMLP(hidden=64, **common)
 
 
@@ -146,6 +152,8 @@ def main():
     ap.add_argument("--relation-gain", type=float, default=0.1)
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--no-norm", action="store_true")
+    ap.add_argument("--models", default="all",
+                    help="comma-separated model names, or all")
     ap.add_argument("--data-root", default="data/mnist")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = ap.parse_args()
@@ -154,7 +162,10 @@ def main():
     out_dir = "dynamic_nf_results"
     os.makedirs(out_dir, exist_ok=True)
     kinds = ["linear", "relu", "gelu", "dynamic", "fixed_relation",
-             "one_step", "no_feedback", "no_state", "no_branches"]
+             "one_step", "no_feedback", "no_state", "no_branches",
+             "no_nonlinearity", "strict_linear_nf"]
+    if args.models != "all":
+        kinds = [x.strip() for x in args.models.split(",") if x.strip()]
     results = [run(k, args, train_loader, test_loader, device, out_dir) for k in kinds]
     # Match an MLP to the dynamic model's parameter count after measuring it.
     dynamic_params = next(r["parameters"] for r in results if r["model"] == "dynamic")
