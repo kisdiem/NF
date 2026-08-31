@@ -1,4 +1,4 @@
-"""Compare a small feature-token Transformer with MLP and Local NF."""
+"""Compare Transformer, MLP, bounded Local NF, and unrestricted Local NF."""
 import argparse, json, os, time
 import torch
 import torch.nn as nn
@@ -27,7 +27,8 @@ def run(kind,tr,te,dim,classes,a):
     torch.manual_seed(a.seed)
     if kind=='relu': m=MLP(dim,classes,F.relu)
     elif kind=='gelu': m=MLP(dim,classes,F.gelu)
-    elif kind=='raw_bounded': m=LocalNF(dim,classes,'raw_bounded')
+    elif kind in ('raw_bounded','raw_unbounded'):
+        m=LocalNF(dim,classes,kind)
     else: m=FeatureTransformer(dim,classes,a.d_model,a.layers,a.heads)
     train=DataLoader(tr,batch_size=a.batch,shuffle=True); test=DataLoader(te,batch_size=1024); opt=torch.optim.Adam(m.parameters(),lr=a.lr,weight_decay=1e-4); hist=[]; st=time.perf_counter()
     for ep in range(a.epochs):
@@ -41,6 +42,6 @@ def run(kind,tr,te,dim,classes,a):
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--tasks',default='spiral3,checkerboard,parity8,noisy_moons100,noisy_spiral100'); p.add_argument('--n',type=int,default=6000); p.add_argument('--epochs',type=int,default=100); p.add_argument('--batch',type=int,default=128); p.add_argument('--lr',type=float,default=3e-3); p.add_argument('--seed',type=int,default=0); p.add_argument('--d-model',type=int,default=16); p.add_argument('--layers',type=int,default=2); p.add_argument('--heads',type=int,default=2); p.add_argument('--result-tag',default='seed0'); a=p.parse_args(); torch.set_num_threads(1); out='transformer_task_results'; os.makedirs(out,exist_ok=True); allr={}
     for task in a.tasks.split(','):
-        tr,te,dim,classes=make_data(task,a.n,a.seed); allr[task]=[run(k,tr,te,dim,classes,a) for k in ('relu','gelu','raw_bounded','transformer')]; print('\n'+task); [print(f"{r['model']:14s} best={r['best_test_acc']:.4f} final={r['final_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.2f}s") for r in allr[task]]
+        tr,te,dim,classes=make_data(task,a.n,a.seed); allr[task]=[run(k,tr,te,dim,classes,a) for k in ('relu','gelu','raw_bounded','raw_unbounded','transformer')]; print('\n'+task); [print(f"{r['model']:14s} best={r['best_test_acc']:.4f} final={r['final_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.2f}s") for r in allr[task]]
     with open(os.path.join(out,'results_'+a.result_tag+'.json'),'w',encoding='utf-8') as f: json.dump(allr,f,indent=2)
 if __name__=='__main__': main()
