@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-02T05:50:46.316381+08:00",
+  "model": "MatchedANN_DNM_MatchedSNN_BioEasy",
+  "dataset": "hard_logic_suite",
+  "seed": 0,
+  "command": "python experiments/results/run_matched_hard_dnm_ann_snn_bio.py --epochs 30 --n 6000 --batch 128 --lr 0.003",
+  "git_branch": "bio-easy-dnm-ann-snn",
+  "git_commit": "051a60da3cf60bdb823878f41a54db61424307b9"
+}

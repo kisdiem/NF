@@ -42,7 +42,11 @@ def make(kind,d,c,target):
     h=matched_width(kind,d,c,target); return ANN(d,h,c) if kind=='ann-matched' else SNN(d,h,c)
 
 def run(task,kind,args):
-    torch.manual_seed(args.seed); xtr,xte,ytr,yte,c=data(task,args.n,args.seed); target=sum(p.numel() for p in bio(xtr.shape[1],c).parameters()); m=make(kind,xtr.shape[1],c,target).to(args.device); p=sum(q.numel() for q in m.parameters())
+    torch.manual_seed(args.seed); xtr,xte,ytr,yte,c=data(task,args.n,args.seed)
+    # Count the Bio target without changing the initialization stream used by
+    # the actual model.  This keeps each model's seed reproducible.
+    target=sum(p.numel() for p in bio(xtr.shape[1],c).parameters())
+    torch.manual_seed(args.seed); m=make(kind,xtr.shape[1],c,target).to(args.device); p=sum(q.numel() for q in m.parameters())
     opt=torch.optim.AdamW(m.parameters(),lr=args.lr,weight_decay=1e-4); tr=DataLoader(TensorDataset(xtr,ytr),args.batch,shuffle=True); te=DataLoader(TensorDataset(xte,yte),1024); hist=[]; start=time.perf_counter()
     for ep in range(1,args.epochs+1):
         m.train(); good=total=loss_sum=0.
