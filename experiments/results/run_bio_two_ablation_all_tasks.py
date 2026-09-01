@@ -61,6 +61,8 @@ def make_model(variant, d_in, classes):
                inhibition=True, adaptive_threshold=True, output_mode="mean")
     if variant == "no_temporal_no_membrane":
         cfg["temporal"] = False; cfg["membrane_decay"] = 0.0
+    elif variant == "no_temporal_membrane":
+        cfg["temporal"] = False
     elif variant == "one_step_temporal_membrane":
         cfg["steps"] = 1
     else:
@@ -99,7 +101,7 @@ def run(task, variant, seed, args):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--seeds", default="0,1,2")
     ap.add_argument("--tasks", default="xor,circles,moons,checkerboard,parity8,noisy_moons100,noisy_spiral100")
-    ap.add_argument("--variants", default="no_temporal_no_membrane,one_step_temporal_membrane")
+    ap.add_argument("--variants", default="no_temporal_membrane,one_step_temporal_membrane")
     ap.add_argument("--epochs", type=int, default=100); ap.add_argument("--n", type=int, default=6000)
     ap.add_argument("--batch", type=int, default=128); ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu"); ap.add_argument("--result", required=True)
