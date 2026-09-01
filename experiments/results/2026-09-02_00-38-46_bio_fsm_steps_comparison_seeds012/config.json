@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-02T00:38:46.111853+08:00",
+  "model": "bio-eazy-3step_vs_bio-eazy-5step_vs_bio-old-5step",
+  "dataset": "FSM_sequence_independent",
+  "seed": 0,
+  "command": "",
+  "git_branch": "experiment-results",
+  "git_commit": "2e4b7ec47aec106c03ff3589f39e1adaea462dcf"
+}
