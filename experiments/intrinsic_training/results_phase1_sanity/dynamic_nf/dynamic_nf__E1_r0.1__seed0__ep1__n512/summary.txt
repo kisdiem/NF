@@ -1,6 +1,0 @@
-dynamic_nf__E1_r0.1__seed0__ep1__n512
-status=complete
-best_test_acc=0.4403
-final_test_acc=0.4403
-elapsed_seconds=0.948
-max_inactive_change=None

@@ -1,6 +1,0 @@
-minimal_local_nf__E0_joint__seed0__ep1__n512
-status=complete
-best_test_acc=0.3767
-final_test_acc=0.3767
-elapsed_seconds=1.493
-max_inactive_change=None
