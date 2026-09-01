@@ -61,8 +61,9 @@ def run(kind,tr,te,dim,classes,a):
     return {'model':kind,'best_test_acc':max(r['test_acc'] for r in hist),'final_test_acc':hist[-1]['test_acc'],'history':hist,'parameters':sum(p.numel() for p in m.parameters()),'seconds':time.perf_counter()-st}
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument('--tasks',default='spiral3,checkerboard,parity8,noisy_moons100,noisy_spiral100'); p.add_argument('--n',type=int,default=6000); p.add_argument('--epochs',type=int,default=100); p.add_argument('--batch',type=int,default=128); p.add_argument('--lr',type=float,default=3e-3); p.add_argument('--seed',type=int,default=0); p.add_argument('--result-tag',default='seed0'); a=p.parse_args(); torch.set_num_threads(1); out='hard_task_results'; os.makedirs(out,exist_ok=True); allr={}
+    p=argparse.ArgumentParser(); p.add_argument('--tasks',default='spiral3,checkerboard,parity8,noisy_moons100,noisy_spiral100'); p.add_argument('--n',type=int,default=6000); p.add_argument('--epochs',type=int,default=100); p.add_argument('--batch',type=int,default=128); p.add_argument('--lr',type=float,default=3e-3); p.add_argument('--seed',type=int,default=0); p.add_argument('--result',default='results/new_electrical_hard.json'); a=p.parse_args(); torch.set_num_threads(1); allr={}
     for task in a.tasks.split(','):
         tr,te,dim,classes=make_data(task,a.n,a.seed); allr[task]=[run(k,tr,te,dim,classes,a) for k in ('relu','gelu','raw_bounded','raw_unbounded','no_inhibition')]; print('\n'+task); [print(f"{r['model']:14s} best={r['best_test_acc']:.4f} final={r['final_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.2f}s") for r in allr[task]]
-    with open(os.path.join(out,'results_'+a.result_tag+'.json'),'w',encoding='utf-8') as f: json.dump(allr,f,indent=2)
+    os.makedirs(os.path.dirname(a.result) or '.',exist_ok=True)
+    with open(a.result,'w',encoding='utf-8') as f: json.dump(allr,f,indent=2)
 if __name__=='__main__': main()
