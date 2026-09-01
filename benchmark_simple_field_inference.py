@@ -15,8 +15,9 @@ def main():
     models = {
         "relu": nn.Sequential(nn.Flatten(), nn.Linear(784, 256), nn.ReLU(), nn.Linear(256, 10)),
         "gelu": nn.Sequential(nn.Flatten(), nn.Linear(784, 256), nn.GELU(), nn.Linear(256, 10)),
-        "A_membrane_only": FieldMLP(False),
-        "B_membrane_threshold": FieldMLP(True),
+        "A_1step": FieldMLP(False, steps=1),
+        "A_2step": FieldMLP(False, steps=2),
+        "A_3step": FieldMLP(False, steps=3),
     }
     print(f"device={device} batch=128 test_samples={len(ds)}")
     for name, model in models.items():
