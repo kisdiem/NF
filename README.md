@@ -37,7 +37,7 @@ train_simple_field_ab.py              # Minimal MNIST / step 对照
 benchmark_minimal_nf_hard_tasks.py    # Minimal 困难任务
 benchmark_hard_tasks.py               # Electrical vs ReLU/GELU 困难任务
 local_electrical_nf.py                # 原始 Electrical 实现
-a local_electrical_nf_v3.py           # raw-bounded / raw-unbounded 等稳定版本
+local_electrical_nf_v3.py             # raw-bounded / raw-unbounded 等稳定版本
 diagnose_local_nf_causality_v2.py     # field 冻结与扰动因果检查
 results/                               # 仅保留关键 JSON
 ```
