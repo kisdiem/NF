@@ -48,7 +48,7 @@ results/                               # 仅保留关键 JSON
 pip install -r requirements.txt
 python train_simple_field_ab.py --epochs 30 --variants A_0step_linear_control,A_1step,A_2step,A_3step --result results/new_minimal_mnist.json
 python benchmark_minimal_nf_hard_tasks.py --lr 0.0003 --steps 1 --result results/new_minimal_hard.json
-python benchmark_hard_tasks.py --epochs 100 --result-tag new
+python benchmark_hard_tasks.py --epochs 100 --result results/new_electrical_hard.json
 python diagnose_local_nf_causality_v2.py --result results/new_field_causality.json
 ```
 
