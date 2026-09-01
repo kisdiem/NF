@@ -1,120 +1,146 @@
-# NF-MLP：离散神经场 MLP 的 MNIST sanity check
+# NF / BioNeuron Branch
 
-对《通用离散神经场MLP完整架构设计_v3.docx》的架构做最小可行性验证。实验代码与结果，可发给架构作者讨论。
+本分支专门维护 **BioNeuron / BioNF**。空间 Local NF 研究请切换到 `local` 分支；完整历史与其他探索版本保留在 `main`。
 
-## 架构一句话
+## 当前研究目标
 
-把标准 MLP `y = W₂·φ(W₁x+b₁)` 里的逐元素激活 φ 换成一个"离散神经场"算子 `Φ_NF: R^d→R^d`：
+BioNeuron 研究的核心问题是：
 
-1. **写入 S**：输入 h 生成 K_s 个种子点（位置+强度），双线性核写入 H×W 网格（t=0 注入）
-2. **传播 F**：四邻域网格，K_t 个离散时间步，每神经元有阈值 T/发送强度 S/延迟 L/持续时长 D，阈值激活
-3. **读出 R**：网格划 d 块区域池化 + 末端 R 步时间加权
+> 如果一个人工神经元内部包含多个树突分支、分支级非线性、兴奋/抑制整合、膜电位和阈值适应，它是否能形成传统点神经元没有的计算能力，并在参数匹配条件下表现出更好的表达效率或泛化能力？
 
-## 实现忠实度（对照文档 22 章节）
+当前结构：
 
-**已实现**：§1-2（算子定义/统一形式）、§4-5（网格与 T/S/L/D 属性）、§6（种子写入+ε扰动）、§7（双线性可微写入）、§8-10（统一离散时间/激活规则/延迟发送）、§12-13（完整算子/非线性来源）、§14（硬阈值+代理梯度）、§15（L/D 离散局部搜索训练）、§16（激活约束 L_act=(ρ-ρ₀)²）、§18-20（GPU 批量形式/复杂度/前向流程）。
-
-**未实现（按"原版 MNIST 基线没有"原则跳过）**：§3 多层堆叠与残差连接（基线是单层 MLP，无堆叠，故 NF 也不堆叠）、§17 一般张量输入接口（MNIST 是展平向量，基线不涉及 (B,M,d)）。
-
-**文档原样 vs 偏离**：
-- §11 读出：**spike（读 m，文档原文）**为默认；`potential`（读 h_arr）是改进变体，用于诊断梯度问题。
-- §14 代理梯度：`surr_scale=1` 即文档原样；`surr_scale>1` 是训练技巧（默认关）。
-
-## 实验设置
-
-- 数据：MNIST，20k 训练子集（公平对比，标准 MLP 在此也能到 95%+）
-- 超参：d=64，网格 32×32，K_s=16，K_t=24，L_max=8，D_max=3，R=12，τ=1.0
-- 训练：Adam，weight_decay=1e-4，grad clip 1.0，batch 128；lr 按模型分别标在结果表
-- 忠实版 NF：ε=0.1（§6），激活约束 λ=0.5、ρ₀=0.1（§16），L/D 搜索每 50 batch 一次（§15）
-- 环境：RTX 3070 8GB，torch 2.5.1
-
-## 结果
-
-| 模型 | test_acc | 训练耗时 | 说明 |
-|---|---|---|---|
-| 标准 MLP 784→256→10 (ReLU) | **96.9%** | 31s/8ep | "原本 MNIST"参考点 |
-| 同宽 MLP 784→64→10 (GELU) | **95.3%** | 29s/8ep | 公平对比 |
-| 同宽 MLP 784→64→10 (ReLU) | **95.0%** | 31s/8ep | 公平对比 |
-| NF-MLP，spike 读出（文档原样，无机制） | **9.8%** | 249s/8ep | ≈ 随机，学不动 |
-| NF-MLP，spike + 完整文档机制（ε+约束+L/D） | **10.3%** | 478s/10ep | 机制救不了，仍随机 |
-| NF-MLP，potential 读出（改进，lr=1e-3） | **80.8%** | 283s/10ep | 能学，仍低于基线 |
-| NF-MLP，potential + 完整文档机制 | **81.2%** | 450s/10ep | 文档机制无明显增益 |
-
-**计算代价**：NF 每个 epoch 约 **8×** 慢于同宽 MLP（249s vs 31s），代价来自 K_t=24 步串行传播。
-
-## 时序验证（sMNIST + Adding）
-
-为了检验 §8-10 的延迟/持续时间动力学是否真的提供时序处理，做了两个经典时序任务。实现把**序列时间映射到场自身的 K_t 步**（每个时间步注入一个种子场），对比同宽 LSTM 和"无跨步状态"的逐步 ReLU。代码在 `train_seq.py`。
-
-### sMNIST（28 行×28 像素，同预算 5 epoch，lr=1e-3，20k）
-
-| 模型 | test acc | 耗时 |
-|---|---|---|
-| LSTM (64) | **91.7%** | 18s |
-| NF 场 (64, 时序注入) | **68.1%** | 204s |
-| 逐步 ReLU (64, 无记忆) | **51.8%** | 15s |
-
-### Adding Problem（T=20，同预算 15 epoch，lr=3e-3，10k）
-
-| 模型 | mse | acc(±0.04) |
-|---|---|---|
-| 逐步 ReLU（无记忆） | 0.0001 | **99.9%** |
-| LSTM (64) | 0.001 | **80.0%** |
-| NF 场 (64) | 0.022 | 22.4% |
-
-### 时序结论
-
-1. **场的时序机制是有效的（正面证据）**：sMNIST 上 NF（68%）显著高于无记忆基线（52%）——延迟/持续时间确实提供了跨步信息整合，这是对设计初衷的第一个正面证据。
-2. **但仍不如 LSTM**：sMNIST 差 24 点，且约 **11× 慢**。场的时序能力有，但不比门控 RNN 高效。
-3. **Adding 方法学警示**：[值, 标记] 形式允许无记忆模型"池化作弊"（隐藏单元用负权重把未标记位置清零、均值池化直接算出目标），逐步 ReLU 达 99.9%——所以 Adding 在这个形式下**不是严格的记忆测试**，不能当结论依据。NF 在其上 22% 说明它没利用这个捷径，但也不构成"记忆差"的证据。
-
-## 三个验证问题的答案
-
-### 1. 能不能训练起来？—— 原样架构：不能；读膜电位后：能
-
-原样架构（读出读脉冲 m）的输入侧梯度被**饿死**：梯度要从输出回传到 t=0 的输入，须穿过 K_t=24 层硬阈值代理，每层乘 σ'≤0.25 → 梯度衰减 ~0.25²⁴≈1e-15，低于 float32 精度（实测 W_up/A/w 梯度 ~1e-7，纯噪声）。
-
-**修复**：读出改为读连续到达信号 h_arr（膜电位，SNN 标准做法），给输入一条不经过阈值层的直接梯度通路。修复后 loss 从 2.30 降到 ~0.62，test_acc 从 10% 学到 **80.8%**（10 epoch，lr=1e-3）。
-
-**完整文档机制（ε 扰动 §6 + 激活约束 §16 + L/D 搜索 §15）也救不了 spike 读出**：加上全部机制后 test_acc 仍只有 10.3%（≈随机）。梯度饿死是读出结构决定的，不是缺训练机制。
-
-### 2. 有没有比 ReLU 强的迹象？—— 没有
-
-即使修好梯度问题，NF 上限也**比同宽 ReLU/GELU 低约 14-16 个点**（81% vs 95%），比标准 MLP 低约 16 点。差距是结构性的，不是训练预算问题：输入信息经 K_s=16 个种子压缩（64 维压成 48 个数），读出区域平均再抹掉空间细节，信息瓶颈让字段难以表达判别性特征。
-
-### 3. 字段是否退化？—— 不退化
-
-激活率 ~6.8%，波能持续传播（z_t0=0.03 → z_tEnd=0.15），v 的 37% 输出维为正，无全死/全饱和。
-
-## 关键发现（给架构作者的建议）
-
-1. **读出是最大问题**：读脉冲 m 会饿死输入梯度（结构性问题，非训练技巧能救——实测加上 §6/§15/§16 全部机制仍学不动）。建议改为读膜电位 h_arr，或两者混合。文档 §11 的"x^read=m"是基础版本，建议把膜电位读出作为默认。
-2. **即使梯度修好，信息瓶颈仍限制表达力**：种子数 K_s、读出区域平均的压缩比需要重新考虑，否则难与 ReLU 竞争（81% vs 95%，14 点差距）。
-3. **计算代价高**：8× 慢于同宽 MLP，除非有明确收益，否则作为通用激活不划算。
-4. **§15 L/D 局部搜索训练已实现并测试**：对结果无实质增益（potential 版 81.2% vs 80.8% 无机制版），且增加约 30% 训练耗时。鉴于梯度饿死，L/D 搜索不是优先级。
-
-## 时序任务运行
-
-```bash
-python train_seq.py --task smnist --model nf --subset 20000 --epochs 5
-python train_seq.py --task smnist --model lstm --subset 20000 --epochs 5
-python train_seq.py --task adding --model nf --subset 10000 --epochs 15 --lr 0.003
-python train_seq.py --task adding --model lstm --subset 10000 --epochs 15 --lr 0.003
+```text
+输入投影
+  -> 多树突分支局部非线性
+  -> 兴奋 / 抑制整合
+  -> 胞体膜电位
+  -> 动态阈值 / adaptation
+  -> activation
+  -> 分类器
 ```
 
-## 运行
+完整设计、失败诊断和实验结论：[`docs/BIO_DESIGN_AND_RESULTS.md`](docs/BIO_DESIGN_AND_RESULTS.md)。
 
-```bash
-python train_mnist.py --model nf   --read-mode potential --lr 0.001 --subset 20000 --epochs 10
-python train_mnist.py --model relu64  --lr 0.003 --subset 20000 --epochs 8
-python train_mnist.py --model gelu64  --lr 0.003 --subset 20000 --epochs 8
-python train_mnist.py --model mlp256  --lr 0.003 --subset 20000 --epochs 8
+## 当前主要结果
+
+### 合成任务
+
+| 任务 | Linear | ReLU | GELU | BioNeuron |
+|---|---:|---:|---:|---:|
+| XOR | 50.0% | 100.0% | 100.0% | **100.0%** |
+| Circles | 49.7% | 100.0% | 100.0% | **100.0%** |
+| Two Moons | 92.8% | 99.9% | 98.3% | **100.0%** |
+
+这些任务只说明 BioNeuron 能形成非线性表示，不能证明它优于 ReLU/GELU。
+
+### MNIST subset=5000
+
+| 配置 | Linear | ReLU | GELU | BioNeuron |
+|---|---:|---:|---:|---:|
+| 10 epochs | 90.4% | 92.4% | 92.3% | 92.6% |
+| 20 epochs, seed 0 best | 90.4% | 92.9% | 93.2% | **93.3%** |
+| 20 epochs, seed 1 best | 90.5% | 93.2% | 93.1% | **93.7%** |
+
+30 轮记录：
+
+- BioNeuron seed 0：约 93.39%
+- BioNeuron seed 1：约 93.66%
+
+当前 BioNeuron 参数量约为对应 ReLU MLP 的 1.66 倍，因此这些差异不能作为“Bio 更强”的证据。
+
+## 关键消融
+
+XOR：
+
+| 变体 | 测试准确率 |
+|---|---:|
+| Full BioNeuron | 100.0% |
+| 1 branch | 72.3% |
+| no temporal | 100.0% |
+| no inhibition | 100.0% |
+| fixed threshold | 100.0% |
+| one step | 75.0% |
+
+目前最值得继续验证的是：
+
+> **多树突分支 + 分支内部非线性 + 胞体整合。**
+
+抑制、动态阈值和时间机制在简单 XOR 上还没有显示独立必要性。
+
+## 一次重要失败
+
+第一版 MNIST 曾出现：
+
+```text
+soma_v_mean            ~= -5.18
+activation_rate        ~= 0.00002
+dead_neuron_ratio      = 1.0
+saturated_neuron_ratio = 1.0
 ```
 
-冒烟测试：`python tests/test_field.py`
+模型几乎所有神经元进入负饱和。通过重新平衡兴奋/抑制初始化，并把多树突贡献从直接求和改为平均，BioNeuron 从约 11.4% 恢复到 92.6%。
 
-## 代码结构
+这说明内部动力学确实影响训练，但也说明 BioNeuron 对尺度设计比普通激活函数更敏感。
 
-- `nf_field.py`：`DiscreteNeuralField` 算子（写入+传播+读出）+ `NFMLPBlock`
-- `train_mnist.py`：训练/对比/诊断
-- `tests/test_field.py`：gradcheck + 手算对照 + 反向冒烟
+## 核心文件
+
+```text
+BIO_BRANCH_SCOPE.md
+README_BioNeuron.md
+docs/BIO_DESIGN_AND_RESULTS.md
+
+models/bio_neuron.py
+experiments/bio_experiments.py
+requirements_bio.txt
+
+bio_results/xor_results.json
+bio_results/circles_results.json
+bio_results/moons_results.json
+bio_results/mnist_results_seed0.json
+bio_results/mnist_results_seed1.json
+bio_results/mnist_results_seed0_30.json
+bio_results/mnist_results_seed1_30.json
+```
+
+## 复现实验
+
+XOR：
+
+```bash
+python experiments/bio_experiments.py --task xor --epochs 300
+```
+
+XOR 消融：
+
+```bash
+python experiments/bio_experiments.py --task xor --epochs 300 --ablation
+```
+
+MNIST：
+
+```bash
+python experiments/bio_experiments.py --task mnist --epochs 20 --subset 5000 --seed 0
+python experiments/bio_experiments.py --task mnist --epochs 20 --subset 5000 --seed 1
+```
+
+树突非线性对照：
+
+```bash
+python experiments/bio_experiments.py --task xor --dendrite soft_threshold
+python experiments/bio_experiments.py --task xor --dendrite quadratic
+python experiments/bio_experiments.py --task xor --dendrite tanh
+```
+
+## 当前优先级
+
+下一阶段最重要的不是继续增加生物机制，而是验证核心结构是否真的有效：
+
+1. parameter-matched ReLU / GELU；
+2. branches = 1 / 2 / 4 / 8，并做固定总参数量版本；
+3. Checkerboard、Noisy Spiral100、Noisy Moons100；
+4. Parity16 / Parity20，避免 Parity8 的组合重复问题；
+5. 在困难任务上重新做 branch / temporal / inhibition / threshold 消融；
+6. 比较参数效率、样本效率和计算成本。
+
+当前最合理的研究定位是：BioNeuron 已经形成一个值得验证的“多树突人工神经元”假设，但还没有证明它是更优的通用神经网络单元。
