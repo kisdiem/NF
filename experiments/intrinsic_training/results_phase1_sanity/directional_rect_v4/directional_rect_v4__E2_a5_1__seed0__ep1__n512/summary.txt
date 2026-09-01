@@ -1,6 +1,0 @@
-directional_rect_v4__E2_a5_1__seed0__ep1__n512
-status=complete
-best_test_acc=0.1429
-final_test_acc=0.1429
-elapsed_seconds=0.963
-max_inactive_change=0.0

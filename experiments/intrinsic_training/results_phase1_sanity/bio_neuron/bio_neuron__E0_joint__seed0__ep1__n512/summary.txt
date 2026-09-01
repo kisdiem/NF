@@ -1,6 +1,0 @@
-bio_neuron__E0_joint__seed0__ep1__n512
-status=complete
-best_test_acc=0.179
-final_test_acc=0.179
-elapsed_seconds=0.887
-max_inactive_change=None
