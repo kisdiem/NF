@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-02T05:55:56.923601+08:00",
+  "model": "MatchedANN_DNM_MatchedSNN_BioEasy",
+  "dataset": "checkerboard_fsm",
+  "seed": 0,
+  "command": "python experiments/results/run_matched_hard_dnm_ann_snn_bio.py --tasks checkerboard,fsm_sequence --epochs 120 --n 6000 --batch 128 --lr 0.003",
+  "git_branch": "bio-easy-dnm-ann-snn",
+  "git_commit": "5ca8f089eaa22a9cd88fc93f4649bcb09a1ddc73"
+}
