@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-02T00:59:07.405885+08:00",
+  "model": "Linear_ReLU_GELU",
+  "dataset": "FSM_sequence_independent",
+  "seed": 0,
+  "command": "python experiments/results/run_mlp_fsm_strict.py --seeds 0,1,2 --epochs 100 --n 6000 --batch 128 --lr 0.003",
+  "git_branch": "experiment-results",
+  "git_commit": "922a4372f5557f7da3fb467654d04beaa29f0eb6"
+}
