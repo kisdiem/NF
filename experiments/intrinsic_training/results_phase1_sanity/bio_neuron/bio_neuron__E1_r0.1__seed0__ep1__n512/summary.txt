@@ -1,0 +1,6 @@
+bio_neuron__E1_r0.1__seed0__ep1__n512
+status=complete
+best_test_acc=0.1794
+final_test_acc=0.1794
+elapsed_seconds=0.975
+max_inactive_change=None

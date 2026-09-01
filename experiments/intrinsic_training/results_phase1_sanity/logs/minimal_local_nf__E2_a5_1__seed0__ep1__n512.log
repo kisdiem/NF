@@ -1,0 +1,48 @@
+{"epoch": 1, "train_loss": 2.2501373291015625, "train_acc": 0.20703125, "test_loss": 2.1670081020355223, "test_acc": 0.3767, "grad_norm_mean": 0.7404144704341888}
+{
+  "status": "complete",
+  "error": null,
+  "best_test_acc": 0.3767,
+  "final_test_acc": 0.3767,
+  "elapsed_seconds": 1.4797002999985125,
+  "parameter_count": 203540,
+  "parameter_groups": {
+    "synaptic": [
+      "input.weight",
+      "input.bias",
+      "field.kernel",
+      "output.weight",
+      "output.bias"
+    ],
+    "intrinsic": [
+      "field.decay_raw"
+    ],
+    "other": [],
+    "discrete_intrinsic": []
+  },
+  "max_parameter_delta": {
+    "synaptic": 0.0012034918181598186,
+    "intrinsic": 0.0,
+    "other": 0.0
+  },
+  "max_inactive_change": 0.0,
+  "final_dynamics": {
+    "state_abs_mean": [
+      0.13278047740459442
+    ],
+    "state_variance": [
+      0.028003303334116936
+    ],
+    "state_change": [
+      0.0643935576081276
+    ],
+    "activation_mean": [
+      0.14546158909797668
+    ],
+    "dead_ratio": 0.0005580356810241938,
+    "saturated_ratio": 0.0,
+    "decay": 0.800000011920929
+  }
+}
+
+STDERR

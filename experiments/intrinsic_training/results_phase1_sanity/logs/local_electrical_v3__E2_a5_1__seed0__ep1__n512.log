@@ -1,0 +1,104 @@
+{"epoch": 1, "train_loss": 2.160479962825775, "train_acc": 0.240234375, "test_loss": 1.7731045127868652, "test_acc": 0.5294, "grad_norm_mean": 2.2623951137065887}
+{
+  "status": "complete",
+  "error": null,
+  "best_test_acc": 0.5294,
+  "final_test_acc": 0.5294,
+  "elapsed_seconds": 1.559811200000695,
+  "parameter_count": 51085,
+  "parameter_groups": {
+    "synaptic": [
+      "input.weight",
+      "input.bias",
+      "output.weight",
+      "output.bias"
+    ],
+    "intrinsic": [
+      "field.theta_raw",
+      "field.strength_raw",
+      "field.decay_raw",
+      "field.rho_raw",
+      "field.beta_raw",
+      "field.gamma_raw"
+    ],
+    "other": [],
+    "discrete_intrinsic": []
+  },
+  "max_parameter_delta": {
+    "synaptic": 0.012031571939587593,
+    "intrinsic": 0.0,
+    "other": 0.0
+  },
+  "max_inactive_change": 0.0,
+  "final_dynamics": {
+    "membrane_mean": [
+      -0.12565851211547852,
+      0.13574714958667755,
+      0.5466243028640747,
+      1.118896484375
+    ],
+    "membrane_abs_mean": [
+      0.30129730701446533,
+      0.3531150817871094,
+      0.6269116401672363,
+      1.1384613513946533
+    ],
+    "state_change": [
+      0.18624936044216156,
+      0.26141318678855896,
+      0.41087716817855835,
+      0.5722722411155701
+    ],
+    "activation_rate": [
+      0.010861766524612904,
+      0.05221619829535484,
+      0.19062897562980652,
+      0.43648356199264526
+    ],
+    "release_abs_mean": [
+      0.02594250813126564,
+      0.05329606309533119,
+      0.12045486271381378,
+      0.23354876041412354
+    ],
+    "excitation_mean": [
+      0.1349528580904007,
+      0.2893466055393219,
+      0.6733056306838989,
+      1.334870457649231
+    ],
+    "inhibition_mean": [
+      0.007159437518566847,
+      0.018274078145623207,
+      0.0539085753262043,
+      0.12754091620445251
+    ],
+    "inhibition_gate_mean": [
+      0.34278565645217896,
+      0.3693341612815857,
+      0.43562495708465576,
+      0.54676753282547
+    ],
+    "threshold_mean": 0.4999999701976776,
+    "effective_threshold_mean": [
+      0.4999999701976776,
+      0.4999999701976776,
+      0.4999999701976776,
+      0.4999999701976776
+    ],
+    "decay_mean": 0.800000011920929,
+    "refractory_mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rho": 0.15000000596046448,
+    "beta": 1.0,
+    "gamma": 0.4999999701976776,
+    "dead_ratio": 3.98596930608619e-05,
+    "saturated_ratio": 0.0
+  }
+}
+
+STDERR

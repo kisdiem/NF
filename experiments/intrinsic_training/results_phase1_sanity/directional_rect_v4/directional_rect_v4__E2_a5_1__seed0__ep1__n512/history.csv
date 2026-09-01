@@ -1,0 +1,2 @@
+epoch,train_loss,train_acc,test_loss,test_acc,grad_norm_mean,dynamics_json
+1,2.2999091148376465,0.095703125,2.2647498832702637,0.1429,0.2464829608798027,{}

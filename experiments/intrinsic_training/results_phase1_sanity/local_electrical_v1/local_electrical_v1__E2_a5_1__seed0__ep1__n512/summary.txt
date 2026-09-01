@@ -1,0 +1,6 @@
+local_electrical_v1__E2_a5_1__seed0__ep1__n512
+status=complete
+best_test_acc=0.5536
+final_test_acc=0.5536
+elapsed_seconds=1.636
+max_inactive_change=0.0

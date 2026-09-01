@@ -1,0 +1,6 @@
+discrete_nf_v3__E2_a5_1__seed0__ep1__n512
+status=complete
+best_test_acc=0.1013
+final_test_acc=0.1013
+elapsed_seconds=1.372
+max_inactive_change=0.0

@@ -1,0 +1,17 @@
+{
+  "model": "local_electrical_v1",
+  "strategy": "E1",
+  "intrinsic_ratio": 0.1,
+  "alternating": "5:1",
+  "epochs": 1,
+  "subset": 512,
+  "batch": 128,
+  "seed": 0,
+  "lr": null,
+  "weight_decay": 0.0001,
+  "device": "cuda",
+  "data_root": "data/mnist",
+  "output_root": "experiments\\intrinsic_training\\results_phase1_sanity",
+  "effective_lr": 0.003,
+  "run_name": "local_electrical_v1__E1_r0.1__seed0__ep1__n512"
+}

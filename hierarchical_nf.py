@@ -101,7 +101,9 @@ class HierarchicalDynamicNeuralField(nn.Module):
             else:
                 relation_changes.append((relation_pack - prev_rel).abs().mean())
             changes.append((state_pack - torch.cat((h1, h2), dim=1)).abs().mean())
-            self.last_relations.append(relation_pack.detach()[:1])
+            # relation_pack is [relation_type, batch, N, N].  Preserve every
+            # relation type and retain only the first diagnostic sample.
+            self.last_relations.append(relation_pack.detach()[:, :1])
             self.last_states.append(state_pack.detach()[:1])
             prev_rel = relation_pack
             h1, h2 = n1, n2
@@ -112,10 +114,10 @@ class HierarchicalDynamicNeuralField(nn.Module):
             "relation_change": torch.stack(relation_changes).detach().cpu().tolist(),
             "state_abs_mean": [x.abs().mean().item() for x in self.last_states],
             "relation_abs_mean": [x.abs().mean().item() for x in self.last_relations],
-            "r11_abs_mean": rel_stack[:, :, 0].abs().mean().item(),
-            "r12_abs_mean": rel_stack[:, :, 1].abs().mean().item(),
-            "r22_abs_mean": rel_stack[:, :, 2].abs().mean().item(),
-            "r21_abs_mean": rel_stack[:, :, 3].abs().mean().item(),
+            "r11_abs_mean": rel_stack[:, 0].abs().mean().item(),
+            "r12_abs_mean": rel_stack[:, 1].abs().mean().item(),
+            "r22_abs_mean": rel_stack[:, 2].abs().mean().item(),
+            "r21_abs_mean": rel_stack[:, 3].abs().mean().item(),
             "feedback": self.feedback,
             "layer2_internal": self.layer2_internal,
         }

@@ -1,0 +1,2 @@
+epoch,train_loss,train_acc,test_loss,test_acc,grad_norm_mean,dynamics_json
+1,2.250132739543915,0.20703125,2.166985570144653,0.3767,0.7405149191617966,"{""state_abs_mean"": [0.13280373811721802], ""state_variance"": [0.028013180941343307], ""state_change"": [0.06438169628381729], ""activation_mean"": [0.1454615443944931], ""dead_ratio"": 0.0005430883029475808, ""saturated_ratio"": 0.0, ""decay"": 0.8001741170883179}"

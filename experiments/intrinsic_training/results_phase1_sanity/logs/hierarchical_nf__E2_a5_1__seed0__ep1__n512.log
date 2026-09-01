@@ -1,0 +1,88 @@
+{"epoch": 1, "train_loss": 2.032416343688965, "train_acc": 0.314453125, "test_loss": 1.495224282836914, "test_acc": 0.695, "grad_norm_mean": 4.182814419269562}
+{
+  "status": "complete",
+  "error": null,
+  "best_test_acc": 0.695,
+  "final_test_acc": 0.695,
+  "elapsed_seconds": 1.0148767000064254,
+  "parameter_count": 51405,
+  "parameter_groups": {
+    "synaptic": [
+      "input.weight",
+      "input.bias",
+      "field.mix1",
+      "field.mix2",
+      "field.q1.weight",
+      "field.k1.weight",
+      "field.q2.weight",
+      "field.k2.weight",
+      "field.self1.weight",
+      "field.self1.bias",
+      "field.msg1.weight",
+      "field.msg1.bias",
+      "field.self2.weight",
+      "field.self2.bias",
+      "field.msg2.weight",
+      "field.msg2.bias",
+      "field.gate1.weight",
+      "field.gate1.bias",
+      "field.gate2.weight",
+      "field.gate2.bias",
+      "field.norm1.weight",
+      "field.norm1.bias",
+      "field.norm2.weight",
+      "field.norm2.bias",
+      "output.weight",
+      "output.bias"
+    ],
+    "intrinsic": [
+      "field.gain1_raw",
+      "field.gain12_raw",
+      "field.gain2_raw",
+      "field.bias1",
+      "field.bias2"
+    ],
+    "other": [],
+    "discrete_intrinsic": []
+  },
+  "max_parameter_delta": {
+    "synaptic": 0.012032140046358109,
+    "intrinsic": 0.0,
+    "other": 0.0
+  },
+  "max_inactive_change": 0.0,
+  "final_dynamics": {
+    "state_change": [
+      0.6438952088356018,
+      0.14531399309635162,
+      0.13377432525157928,
+      0.11845752596855164
+    ],
+    "relation_change": [
+      0.0,
+      0.013184675015509129,
+      0.0033492683432996273,
+      0.0030984256882220507
+    ],
+    "state_abs_mean": [
+      0.8893516659736633,
+      0.8912014365196228,
+      0.8874622583389282,
+      0.8799965381622314
+    ],
+    "relation_abs_mean": [
+      0.0014626458287239075,
+      0.013854451477527618,
+      0.013092361390590668,
+      0.012268481776118279
+    ],
+    "r11_abs_mean": 0.014580721966922283,
+    "r12_abs_mean": 0.010207755491137505,
+    "r22_abs_mean": 0.01588946208357811,
+    "r21_abs_mean": 0.0,
+    "feedback": false,
+    "layer2_internal": true
+  }
+}
+
+STDERR

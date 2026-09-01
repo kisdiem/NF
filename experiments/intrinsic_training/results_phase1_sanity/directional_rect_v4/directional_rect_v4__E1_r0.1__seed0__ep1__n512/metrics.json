@@ -1,0 +1,30 @@
+{
+  "status": "complete",
+  "error": null,
+  "best_test_acc": 0.1433,
+  "final_test_acc": 0.1433,
+  "elapsed_seconds": 0.9933745000016643,
+  "parameter_count": 53450,
+  "parameter_groups": {
+    "synaptic": [
+      "1.W_up.weight",
+      "1.W_up.bias",
+      "1.field.Q",
+      "1.W_down.weight",
+      "1.W_down.bias"
+    ],
+    "intrinsic": [
+      "1.field.theta",
+      "1.field.g_raw"
+    ],
+    "other": [],
+    "discrete_intrinsic": []
+  },
+  "max_parameter_delta": {
+    "synaptic": 0.011930705048143864,
+    "intrinsic": 0.0012010037899017334,
+    "other": 0.0
+  },
+  "max_inactive_change": null,
+  "final_dynamics": {}
+}

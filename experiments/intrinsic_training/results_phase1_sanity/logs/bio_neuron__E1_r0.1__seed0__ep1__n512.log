@@ -1,0 +1,52 @@
+{"epoch": 1, "train_loss": 2.268296778202057, "train_acc": 0.12109375, "test_loss": 2.1860118713378904, "test_acc": 0.1794, "grad_norm_mean": 0.4291059076786041}
+{
+  "status": "complete",
+  "error": null,
+  "best_test_acc": 0.1794,
+  "final_test_acc": 0.1794,
+  "elapsed_seconds": 0.9750274999969406,
+  "parameter_count": 59786,
+  "parameter_groups": {
+    "synaptic": [
+      "input.weight",
+      "input.bias",
+      "bio.exc_left_raw",
+      "bio.exc_right_raw",
+      "bio.inh_left_raw",
+      "bio.inh_right_raw",
+      "classifier.weight",
+      "classifier.bias"
+    ],
+    "intrinsic": [
+      "bio.branch_bias",
+      "bio.branch_gain_raw",
+      "bio.soma_gain_raw",
+      "bio.theta_raw",
+      "bio.adaptation_raw"
+    ],
+    "other": [],
+    "discrete_intrinsic": []
+  },
+  "max_parameter_delta": {
+    "synaptic": 0.012033998966217041,
+    "intrinsic": 0.0012023448944091797,
+    "other": 0.0
+  },
+  "max_inactive_change": null,
+  "final_dynamics": {
+    "dendritic_activation_mean": 0.7268450260162354,
+    "dendritic_activation_std": 0.8860784769058228,
+    "soma_v_mean": 0.03987572342157364,
+    "soma_v_std": 0.562614381313324,
+    "threshold_mean": 0.5164721012115479,
+    "threshold_std": 0.02344079315662384,
+    "activation_rate": 0.22801589965820312,
+    "adaptation_mean": 0.16493044793605804,
+    "dead_neuron_ratio": 0.0,
+    "saturated_neuron_ratio": 0.0,
+    "positive_weight_ratio": 0.51214599609375,
+    "negative_weight_ratio": 0.48785400390625
+  }
+}
+
+STDERR
