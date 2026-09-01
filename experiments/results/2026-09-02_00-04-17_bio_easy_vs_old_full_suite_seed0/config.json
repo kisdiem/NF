@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-02T00:04:17.967991+08:00",
+  "model": "bio-eazy_vs_bio-old",
+  "dataset": "previous_plus_logic_tasks_independent",
+  "seed": 0,
+  "command": "",
+  "git_branch": "experiment-results",
+  "git_commit": "d7ecbab239da4f801bddadd1d64a3f8a75f8c529"
+}
