@@ -66,13 +66,13 @@ def param_count(m): return sum(p.numel() for p in m.parameters())
 
 
 def matched_hidden(target,d_in,d_out):
-    # Exact parameter count of a one-hidden-layer baseline is h*(d_in+d_out+1)+d_out.
     return max(1, round((target-d_out)/(d_in+d_out+1)))
 
 
 def train(model,xtr,ytr,xte,yte,args):
     dev=torch.device(args.device); model=model.to(dev); xtr,ytr,xte,yte=xtr.to(dev),ytr.to(dev),xte.to(dev),yte.to(dev)
-    opt=torch.optim.Adam(model.parameters(),lr=args.lr,weight_decay=1e-4); hist=[]; clock_start=time.monotonic(); g=torch.Generator(device=dev).manual_seed(args.seed)
+    opt=torch.optim.Adam(model.parameters(),lr=args.lr,weight_decay=1e-4); hist=[]; clock_start=time.monotonic()
+    gen_device="cuda" if dev.type=="cuda" else "cpu"; g=torch.Generator(device=gen_device).manual_seed(args.seed)
     for ep in range(args.epochs):
         model.train(); order=torch.randperm(xtr.shape[0],generator=g,device=dev); loss_sum=0.0
         for batch_start in range(0,xtr.shape[0],args.batch):
@@ -85,15 +85,26 @@ def train(model,xtr,ytr,xte,yte,args):
 
 
 def run_task(name,args):
-    xtr,ytr,xte,yte,d_in,d_out,hidden=load_task(name,args); rows=[]
-    full=make_bio(d_in,hidden,d_out,args); bio_params=param_count(full); base_hidden=matched_hidden(bio_params,d_in,d_out) if args.parameter_match else hidden
-    variants=[("linear",Baseline(d_in,base_hidden,d_out,"linear")),("relu",Baseline(d_in,base_hidden,d_out,"relu")),("gelu",Baseline(d_in,base_hidden,d_out,"gelu")),("bio",full)]
-    if args.ablation:
-        variants=[("bio_full",full)]+[("bio_"+a,make_bio(d_in,hidden,d_out,args,ablation=a)) for a in ("one_branch","no_temporal","no_inhibition","fixed_threshold","one_step")]
+    xtr,ytr,xte,yte,d_in,d_out,hidden=load_task(name,args)
+    torch.manual_seed(args.seed)
+    probe=make_bio(d_in,hidden,d_out,args)
+    bio_params=param_count(probe); base_hidden=matched_hidden(bio_params,d_in,d_out) if args.parameter_match else hidden
+
     if args.branch_sweep:
-        variants=[(f"bio_b{b}",make_bio(d_in,hidden,d_out,args,branches=b)) for b in [int(x) for x in args.branch_sweep.split(',')]]
-    for label,model in variants:
-        torch.manual_seed(args.seed); r=train(model,xtr,ytr,xte,yte,args); r.update({"task":name,"model":label}); rows.append(r); print(f"{name:8s} {label:16s} best={r['best_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.1f}s")
+        specs=[(f"bio_b{b}","bio",{"branches":b}) for b in [int(x) for x in args.branch_sweep.split(',')]]
+    elif args.ablation:
+        specs=[("bio_full","bio",{})]+[("bio_"+a,"bio",{"ablation":a}) for a in ("one_branch","no_temporal","no_inhibition","fixed_threshold","one_step")]
+    else:
+        specs=[("linear","baseline",{"kind":"linear"}),("relu","baseline",{"kind":"relu"}),("gelu","baseline",{"kind":"gelu"}),("bio","bio",{})]
+
+    rows=[]
+    for label,family,cfg in specs:
+        # Seed is reset before model construction so initialization is controlled across variants.
+        torch.manual_seed(args.seed)
+        if family=="baseline": model=Baseline(d_in,base_hidden,d_out,cfg["kind"])
+        else: model=make_bio(d_in,hidden,d_out,args,branches=cfg.get("branches"),ablation=cfg.get("ablation"))
+        r=train(model,xtr,ytr,xte,yte,args); r.update({"task":name,"model":label,"parameter_match":args.parameter_match}); rows.append(r)
+        print(f"{name:8s} {label:16s} best={r['best_test_acc']:.4f} params={r['parameters']} time={r['seconds']:.1f}s")
     return rows
 
 
