@@ -67,7 +67,7 @@ def main():
     torch.manual_seed(a.seed); device=torch.device(a.device); tf=transforms.ToTensor(); tr=datasets.MNIST(a.data_root,True,download=True,transform=tf); te=datasets.MNIST(a.data_root,False,download=True,transform=tf)
     if a.subset: tr=torch.utils.data.Subset(tr, range(a.subset))
     train=DataLoader(tr,a.batch,shuffle=True); test=DataLoader(te,1024); results={'config':vars(a),'variants':{}}
-    for name, model in [('A_1step',FieldMLP(False,steps=1))]:
+    for name, model in [('A_0step_linear_control',FieldMLP(False,steps=0))]:
         torch.manual_seed(a.seed); print('START',name,flush=True); results['variants'][name]=run(model,train,test,device,a.epochs,3e-4)
     print(json.dumps(results,indent=2)); json.dump(results,open(a.result,'w'),indent=2)
 
