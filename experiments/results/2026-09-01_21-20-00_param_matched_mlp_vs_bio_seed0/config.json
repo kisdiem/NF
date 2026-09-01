@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-01T21:20:00.700627+08:00",
+  "model": "BioMLP_vs_parameter_matched_MLP",
+  "dataset": "simple_complex",
+  "seed": 0,
+  "command": "",
+  "git_branch": "experiment-results",
+  "git_commit": "e22627408521af9d33a12ea8ec932484510d1ed8"
+}

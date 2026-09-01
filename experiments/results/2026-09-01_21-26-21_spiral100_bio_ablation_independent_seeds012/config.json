@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-01T21:26:21.748810+08:00",
+  "model": "BioMLP_ablation",
+  "dataset": "independent_noisy_spiral100",
+  "seed": 0,
+  "command": "",
+  "git_branch": "experiment-results",
+  "git_commit": "4c6ccdd89def496a23a0ffc4be46a994fef1f9e9"
+}
