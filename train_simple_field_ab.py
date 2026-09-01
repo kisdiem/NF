@@ -14,8 +14,8 @@ from torchvision import datasets, transforms
 
 
 class MinimalField(nn.Module):
-    def __init__(self, threshold=False, steps=2, size=16):
-        super().__init__(); self.threshold = threshold; self.steps = steps; self.size = size
+    def __init__(self, threshold=False, steps=2, size=16, circular=False):
+        super().__init__(); self.threshold = threshold; self.steps = steps; self.size = size; self.circular = circular
         self.decay_logit = nn.Parameter(torch.tensor(1.3863))
         self.kernel = nn.Parameter(torch.tensor([[.0, .2, .0], [.2, .0, .2], [.0, .2, .0]]).view(1, 1, 3, 3))
         if threshold:
@@ -28,13 +28,18 @@ class MinimalField(nn.Module):
                 signal = torch.sigmoid((v - self.theta) / .5)
             else:
                 signal = torch.tanh(v)
-            v = decay * v + F.conv2d(signal, self.kernel, padding=1)
+            if self.circular:
+                signal = F.pad(signal, (1, 1, 1, 1), mode='circular')
+                incoming = F.conv2d(signal, self.kernel, padding=0)
+            else:
+                incoming = F.conv2d(signal, self.kernel, padding=1)
+            v = decay * v + incoming
         return v
 
 
 class FieldMLP(nn.Module):
-    def __init__(self, threshold, steps=2):
-        super().__init__(); self.up = nn.Linear(784, 256); self.field = MinimalField(threshold, steps); self.out = nn.Linear(256, 10)
+    def __init__(self, threshold, steps=2, circular=False):
+        super().__init__(); self.up = nn.Linear(784, 256); self.field = MinimalField(threshold, steps, circular=circular); self.out = nn.Linear(256, 10)
     def forward(self, x): return self.out(self.field(self.up(x.flatten(1)).view(-1, 1, 16, 16)).flatten(1))
 
 
@@ -62,7 +67,7 @@ def main():
     torch.manual_seed(a.seed); device=torch.device(a.device); tf=transforms.ToTensor(); tr=datasets.MNIST(a.data_root,True,download=True,transform=tf); te=datasets.MNIST(a.data_root,False,download=True,transform=tf)
     if a.subset: tr=torch.utils.data.Subset(tr, range(a.subset))
     train=DataLoader(tr,a.batch,shuffle=True); test=DataLoader(te,1024); results={'config':vars(a),'variants':{}}
-    for name, model in [('relu',nn.Sequential(nn.Flatten(),nn.Linear(784,256),nn.ReLU(),nn.Linear(256,10))),('gelu',nn.Sequential(nn.Flatten(),nn.Linear(784,256),nn.GELU(),nn.Linear(256,10))),('A_membrane_only',FieldMLP(False)),('B_membrane_threshold',FieldMLP(True))]:
+    for name, model in [('A_zero',FieldMLP(False)),('A_circular',FieldMLP(False,circular=True)),('B_zero',FieldMLP(True)),('B_circular',FieldMLP(True,circular=True))]:
         torch.manual_seed(a.seed); print('START',name,flush=True); results['variants'][name]=run(model,train,test,device,a.epochs,3e-4)
     print(json.dumps(results,indent=2)); json.dump(results,open(a.result,'w'),indent=2)
 
