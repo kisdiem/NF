@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-09-01T23:44:08.872491+08:00",
+  "model": "BioMLP_single_combined_ablation",
+  "dataset": "simple_to_complex_independent",
+  "seed": 0,
+  "command": "",
+  "git_branch": "experiment-results",
+  "git_commit": "03681a44bc25e5a21d8047bdc94d4126e4a33fee"
+}

@@ -61,6 +61,8 @@ def make_model(variant, d_in, classes):
                inhibition=True, adaptive_threshold=True, output_mode="mean")
     if variant == "no_temporal_no_membrane":
         cfg["temporal"] = False; cfg["membrane_decay"] = 0.0
+    elif variant == "one_step_no_temporal_no_membrane":
+        cfg["steps"] = 1; cfg["temporal"] = False; cfg["membrane_decay"] = 0.0
     elif variant == "no_temporal_membrane":
         cfg["temporal"] = False
     elif variant == "one_step_temporal_membrane":
